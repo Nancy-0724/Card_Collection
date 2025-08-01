@@ -1,4 +1,5 @@
-const cardForm = document.getElementById("cardForm");
+// 取得 HTML 中的各項 DOM 元素
+const form = document.getElementById("cardForm");
 const imageInput = document.getElementById("imageInput");
 const cardList = document.getElementById("cardList");
 const sortSelect = document.getElementById("sortSelect");
@@ -46,7 +47,7 @@ async function uploadToDrive(file) {
 }
 
 // ✅ 表單送出處理
-cardForm.addEventListener("submit", async (e) => {
+form.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const file = imageInput.files[0];
@@ -69,7 +70,7 @@ cardForm.addEventListener("submit", async (e) => {
   cards.push(card);
   saveCards(cards);
   renderCards();
-  cardForm.reset();
+  form.reset();
 });
 
 // ✅ 取得所有卡片資料
@@ -82,7 +83,7 @@ function saveCards(cards) {
   localStorage.setItem("cards", JSON.stringify(cards));
 }
 
-// ✅ 顯示所有卡片（使用 DOM 建立方式避免 innerHTML & 問題）
+// ✅ 顯示所有卡片
 function renderCards() {
   cardList.innerHTML = "";
   let cards = getCards();
@@ -97,28 +98,22 @@ function renderCards() {
     const div = document.createElement("div");
     div.className = "card";
 
+    // ✅ 圖片元件建構（加上 referrerPolicy + 備用圖片）
     const img = document.createElement("img");
     img.src = card.imageUrl;
     img.alt = "小卡圖片";
-    img.style.width = "100px";
-    img.style.height = "100px";
-    img.style.objectFit = "cover";
-    img.style.border = "1px solid #ccc";
+    img.referrerPolicy = "no-referrer";
     img.onerror = function () {
       this.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/100px-No_image_available.svg.png";
     };
 
     const info = document.createElement("div");
     info.className = "card-info";
-
-    const strong = document.createElement("strong");
-    strong.textContent = card.title + (card.isFavorite ? " ⭐" : "");
-
-    const small = document.createElement("small");
-    small.textContent = `${card.date} | ${card.price} 元`;
-
-    const p = document.createElement("p");
-    p.textContent = card.note;
+    info.innerHTML = `
+      <strong>${card.title}</strong> ${card.isFavorite ? "⭐" : ""}<br/>
+      <small>${card.date} | ${card.price} 元</small>
+      <p>${card.note}</p>
+    `;
 
     const favBtn = document.createElement("button");
     favBtn.textContent = card.isFavorite ? "取消收藏" : "加入收藏";
@@ -128,10 +123,6 @@ function renderCards() {
     delBtn.textContent = "刪除";
     delBtn.onclick = () => deleteCard(card.id);
 
-    info.appendChild(strong);
-    info.appendChild(document.createElement("br"));
-    info.appendChild(small);
-    info.appendChild(p);
     info.appendChild(favBtn);
     info.appendChild(delBtn);
 
