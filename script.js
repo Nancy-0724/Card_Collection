@@ -90,22 +90,24 @@ function renderCards() {
   cardList.innerHTML = "";
   let cards = getCards();
 
+  console.log("📋 卡片資料：", cards);
+
   const sort = sortSelect.value;
   if (sort === "price-asc") cards.sort((a, b) => a.price - b.price);
   if (sort === "price-desc") cards.sort((a, b) => b.price - a.price);
-  if (sort === "date-asc")
-    cards.sort((a, b) => new Date(a.date) - new Date(b.date));
-  if (sort === "date-desc")
-    cards.sort((a, b) => new Date(b.date) - new Date(a.date));
+  if (sort === "date-asc") cards.sort((a, b) => new Date(a.date) - new Date(b.date));
+  if (sort === "date-desc") cards.sort((a, b) => new Date(b.date) - new Date(a.date));
 
   for (const card of cards) {
-    console.log("🔍 顯示圖片網址：", card.imageUrl);
+    console.log("🔍 圖片網址：", card.imageUrl);
 
     const div = document.createElement("div");
     div.className = "card";
 
     div.innerHTML = `
-      <img src="${card.imageUrl}" alt="小卡圖片" onerror="this.src='https://via.placeholder.com/100?text=No+Image'" />
+      <img src="${card.imageUrl || 'https://via.placeholder.com/100?text=No+Image'}"
+           alt="小卡圖片"
+           style="width:100px; height:100px; border:1px solid #ccc;" />
       <div class="card-info">
         <strong>${card.title}</strong> ${card.isFavorite ? "⭐" : ""}<br/>
         <small>${card.date} | ${card.price} 元</small>
