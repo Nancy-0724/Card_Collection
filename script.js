@@ -20,26 +20,32 @@ async function uploadToDrive(file) {
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: formData.toString()
-            redirect: "follow", // ← 這行是解決你目前看不到 response 的關鍵！
+            body: formData.toString(),
+            redirect: "follow" // ✅ 必須加這一行才能處理 Apps Script 的跳轉
           }
         );
+
         const data = await res.json();
+        console.log("📦 回傳資料：", data);
+
         if (data.success) {
+          console.log("🖼️ 圖片網址：", data.url);
           resolve(data.url);
         } else {
           alert("圖片上傳失敗：" + data.message);
           resolve(null);
         }
       } catch (err) {
-        console.error("圖片上傳錯誤：", err);
+        console.error("❌ 圖片上傳錯誤：", err);
         alert("連線錯誤：" + err.message);
         resolve(null);
       }
     };
+
     reader.readAsDataURL(file);
   });
 }
+
 
 // ✅ 表單送出處理
 form.addEventListener("submit", async (e) => {
