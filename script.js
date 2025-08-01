@@ -16,7 +16,7 @@ async function uploadToDrive(file) {
 
       try {
         const res = await fetch(
-          "https://script.google.com/macros/s/AKfycbwbdptCs6EA2K8BbInKXkq1kH5M_BR9wfsiCQdbyWcqsPUnnguSFHkynOuGPtRaA3M/exec",
+          "https://script.google.com/macros/s/AKfycbydJqLXeXTlN_t1yYGcqgCVbfBK4ZY1ePJCy3815_A4OhHxXVwQl7tIAvKrp9lt_YJd/exec",
           {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
