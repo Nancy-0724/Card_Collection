@@ -105,7 +105,7 @@ function renderCards() {
     div.className = "card";
 
     div.innerHTML = `
-      <img src="${card.imageUrl}" alt="小卡圖片" onerror="this.style.display='none'" />
+      <img src="${card.imageUrl}" alt="小卡圖片" onerror="this.src='https://via.placeholder.com/100?text=No+Image'" />
       <div class="card-info">
         <strong>${card.title}</strong> ${card.isFavorite ? "⭐" : ""}<br/>
         <small>${card.date} | ${card.price} 元</small>
