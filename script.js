@@ -21,6 +21,7 @@ async function uploadToDrive(file) {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: formData.toString()
+            redirect: "follow" // ← 這行是解決你目前看不到 response 的關鍵！
           }
         );
         const data = await res.json();
