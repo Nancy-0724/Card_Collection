@@ -99,9 +99,11 @@ function renderCards() {
     div.className = "card";
 
     div.innerHTML = `
-      <img src="${card.imageUrl || 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/100px-No_image_available.svg.png'}"
-           alt="小卡圖片"
-           style="width:100px; height:100px; border:1px solid #ccc;" />
+      <img src="${card.imageUrl}" 
+           alt="小卡圖片" 
+           style="width: 100px; height: 100px; object-fit: cover; border: 1px solid #ccc;"
+           onerror="this.onerror=null; this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/100px-No_image_available.svg.png';"
+      />
       <div class="card-info">
         <strong>${card.title}</strong> ${card.isFavorite ? "⭐" : ""}<br/>
         <small>${card.date} | ${card.price} 元</small>
