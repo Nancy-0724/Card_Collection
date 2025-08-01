@@ -1,0 +1,134 @@
+/* 頁面背景與整體字體樣式 */
+body {
+  font-family: Arial, sans-serif;
+  background: #f3f3f3;
+  margin: 0;
+  padding: 20px;
+  color: #333;
+}
+
+/* 主容器樣式 */
+.container {
+  max-width: 700px;
+  margin: auto;
+  background: white;
+  padding: 20px 30px;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* 標題文字 */
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+/* 表單欄位區塊 */
+form label {
+  display: block;
+  margin-bottom: 15px;
+  font-weight: bold;
+}
+
+/* 輸入欄位與下拉選單統一樣式 */
+input[type="text"],
+input[type="date"],
+input[type="number"],
+textarea,
+select {
+  width: 100%;
+  padding: 8px;
+  margin-top: 5px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  box-sizing: border-box;
+}
+
+/* 提交按鈕樣式 */
+button[type="submit"] {
+  padding: 10px 20px;
+  background-color: #1e90ff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+button[type="submit"]:hover {
+  background-color: #1c7ed6;
+}
+
+/* 卡片清單區塊 */
+.card-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+/* 每張小卡外框 */
+.card {
+  display: flex;
+  background: #fafafa;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  transition: transform 0.2s;
+}
+
+.card:hover {
+  transform: scale(1.01);
+}
+
+/* 卡片圖片區 */
+.card img {
+  width: 100px;
+  height: 100px;
+  -o-object-fit: cover;
+     object-fit: cover;
+  flex-shrink: 0;
+}
+
+/* 卡片右側資訊區 */
+.card-info {
+  padding: 10px;
+  flex: 1;
+}
+
+/* 卡片內的按鈕 */
+.card-info button {
+  margin-top: 6px;
+  margin-right: 8px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85em;
+}
+
+/* 收藏按鈕樣式 */
+.card-info button:nth-child(4) {
+  background-color: #ffe066;
+}
+.card-info button:nth-child(4):hover {
+  background-color: #ffd43b;
+}
+
+/* 刪除按鈕樣式 */
+.card-info button:nth-child(5) {
+  background-color: #ff6b6b;
+  color: white;
+}
+.card-info button:nth-child(5):hover {
+  background-color: #fa5252;
+}
+
+/* 排序下拉選單 */
+select#sortSelect {
+  margin-bottom: 10px;
+  margin-top: 10px;
+  padding: 6px;
+  border-radius: 6px;
+}

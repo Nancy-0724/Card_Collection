@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en" >
+<head>
+  <meta charset="UTF-8">
+  <title>Untitled</title>
+  <link rel="stylesheet" href="./style.css">
+
+</head>
+<body>
+<!-- partial:index.partial.html -->
+<!DOCTYPE html>
+<html lang="zh-Hant">
+
+<head>
+  <meta charset="UTF-8">
+  <title>小卡圖鑑收集</title>
+  <link rel="stylesheet" href="./style.css">
+</head>
+
+<body>
+  <div class="container">
+    <h1>小卡圖鑑收集</h1>
+
+    <!-- 卡片新增表單 -->
+    <form id="cardForm">
+      <!-- 圖片上傳 -->
+      <label>上傳圖片：
+        <input type="file" id="imageInput" accept="image/*" required />
+      </label>
+
+      <!-- 標題 -->
+      <label>標題：
+        <input type="text" id="titleInput" required />
+      </label>
+
+      <!-- 備註 -->
+      <label>備註：
+        <textarea id="noteInput" rows="2" placeholder="這張小卡的故事、角色、用途等"></textarea>
+      </label>
+
+      <!-- 獲得日期 -->
+      <label>獲得日期：
+        <input type="date" id="dateInput" required />
+      </label>
+
+      <!-- 價格 -->
+      <label>收購價格（元）：
+        <input type="number" id="priceInput" min="0" required />
+      </label>
+
+      <!-- 送出按鈕 -->
+      <button type="submit">加入收藏</button>
+    </form>
+
+    <hr />
+
+    <!-- 排序選單 -->
+    <label>排序方式：
+      <select id="sortSelect">
+        <option value="date-desc">時間（新到舊）</option>
+        <option value="date-asc">時間（舊到新）</option>
+        <option value="price-asc">價格（低到高）</option>
+        <option value="price-desc">價格（高到低）</option>
+      </select>
+    </label>
+
+    <h2>我的小卡收藏</h2>
+
+    <!-- 小卡清單顯示區 -->
+    <div id="cardList" class="card-list"></div>
+  </div>
+
+  <!-- JS 程式 -->
+  <script src="./script.js"></script>
+</body>
+
+</html>
+<!-- partial -->
+  <script  src="./script.js"></script>
+
+</body>
+</html>
