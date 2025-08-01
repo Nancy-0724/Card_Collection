@@ -1,4 +1,3 @@
-// 取得 HTML 中的各項 DOM 元素
 const cardForm = document.getElementById("cardForm");
 const imageInput = document.getElementById("imageInput");
 const cardList = document.getElementById("cardList");
@@ -83,7 +82,7 @@ function saveCards(cards) {
   localStorage.setItem("cards", JSON.stringify(cards));
 }
 
-// ✅ 顯示所有卡片
+// ✅ 顯示所有卡片（使用 DOM 建立方式避免 innerHTML & 問題）
 function renderCards() {
   cardList.innerHTML = "";
   let cards = getCards();
@@ -98,22 +97,46 @@ function renderCards() {
     const div = document.createElement("div");
     div.className = "card";
 
-    div.innerHTML = `
-      <img src="${card.imageUrl}" 
-           alt="小卡圖片" 
-           style="width: 100px; height: 100px; object-fit: cover; border: 1px solid #ccc;"
-           onerror="this.onerror=null; this.src='https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/100px-No_image_available.svg.png';"
-      />
-      <div class="card-info">
-        <strong>${card.title}</strong> ${card.isFavorite ? "⭐" : ""}<br/>
-        <small>${card.date} | ${card.price} 元</small>
-        <p>${card.note}</p>
-        <button onclick="toggleFavorite(${card.id})">
-          ${card.isFavorite ? "取消收藏" : "加入收藏"}
-        </button>
-        <button onclick="deleteCard(${card.id})">刪除</button>
-      </div>
-    `;
+    const img = document.createElement("img");
+    img.src = card.imageUrl;
+    img.alt = "小卡圖片";
+    img.style.width = "100px";
+    img.style.height = "100px";
+    img.style.objectFit = "cover";
+    img.style.border = "1px solid #ccc";
+    img.onerror = function () {
+      this.src = "https://upload.wikimedia.org/wikipedia/commons/thumb/a/ac/No_image_available.svg/100px-No_image_available.svg.png";
+    };
+
+    const info = document.createElement("div");
+    info.className = "card-info";
+
+    const strong = document.createElement("strong");
+    strong.textContent = card.title + (card.isFavorite ? " ⭐" : "");
+
+    const small = document.createElement("small");
+    small.textContent = `${card.date} | ${card.price} 元`;
+
+    const p = document.createElement("p");
+    p.textContent = card.note;
+
+    const favBtn = document.createElement("button");
+    favBtn.textContent = card.isFavorite ? "取消收藏" : "加入收藏";
+    favBtn.onclick = () => toggleFavorite(card.id);
+
+    const delBtn = document.createElement("button");
+    delBtn.textContent = "刪除";
+    delBtn.onclick = () => deleteCard(card.id);
+
+    info.appendChild(strong);
+    info.appendChild(document.createElement("br"));
+    info.appendChild(small);
+    info.appendChild(p);
+    info.appendChild(favBtn);
+    info.appendChild(delBtn);
+
+    div.appendChild(img);
+    div.appendChild(info);
     cardList.appendChild(div);
   }
 }
