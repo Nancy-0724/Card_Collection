@@ -1,5 +1,5 @@
 // 取得 HTML 中的各項 DOM 元素
-const form = document.getElementById("cardForm");
+const cardForm = document.getElementById("cardForm");
 const imageInput = document.getElementById("imageInput");
 const cardList = document.getElementById("cardList");
 const sortSelect = document.getElementById("sortSelect");
@@ -21,7 +21,7 @@ async function uploadToDrive(file) {
             method: "POST",
             headers: { "Content-Type": "application/x-www-form-urlencoded" },
             body: formData.toString(),
-            redirect: "follow" // ✅ 必須加這一行才能處理 Apps Script 的跳轉
+            redirect: "follow"
           }
         );
 
@@ -46,9 +46,8 @@ async function uploadToDrive(file) {
   });
 }
 
-
 // ✅ 表單送出處理
-form.addEventListener("submit", async (e) => {
+cardForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const file = imageInput.files[0];
@@ -67,11 +66,13 @@ form.addEventListener("submit", async (e) => {
     isFavorite: false
   };
 
+  console.log("✅ 儲存卡片：", card);
+
   const cards = getCards();
   cards.push(card);
   saveCards(cards);
   renderCards();
-  form.reset();
+  cardForm.reset();
 });
 
 // ✅ 取得所有卡片資料
@@ -98,11 +99,13 @@ function renderCards() {
     cards.sort((a, b) => new Date(b.date) - new Date(a.date));
 
   for (const card of cards) {
+    console.log("🔍 顯示圖片網址：", card.imageUrl);
+
     const div = document.createElement("div");
     div.className = "card";
 
     div.innerHTML = `
-      <img src="${card.imageUrl}" />
+      <img src="${card.imageUrl}" alt="小卡圖片" onerror="this.style.display='none'" />
       <div class="card-info">
         <strong>${card.title}</strong> ${card.isFavorite ? "⭐" : ""}<br/>
         <small>${card.date} | ${card.price} 元</small>
