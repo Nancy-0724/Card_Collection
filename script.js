@@ -3,7 +3,7 @@ const imageInput = document.getElementById("imageInput");
 const cardList = document.getElementById("cardList");
 const sortSelect = document.getElementById("sortSelect");
 
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxUsojxUScoSM1pXp7F0_MPATBQM8tcjHPmtq5xzywjEo3Lmn_PTGn0lj9B8QxzpVU36A/exec"; // 請替換
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/你的網址/exec"; // ← 替換成你自己的網址
 
 async function uploadToDrive(file) {
   return new Promise((resolve) => {
@@ -112,8 +112,11 @@ async function renderCards() {
 
     const title = document.createElement("strong");
     title.textContent = card.title + (card.isFavorite ? " ⭐" : "");
+
     const meta = document.createElement("small");
-    meta.textContent = `${card.date} | ${card.price} 元`;
+    const formattedDate = card.date.split("T")[0]; // ✅ 顯示為 YYYY-MM-DD
+    meta.textContent = `${formattedDate} | ${card.price} 元`;
+
     const note = document.createElement("p");
     note.textContent = card.note;
 
