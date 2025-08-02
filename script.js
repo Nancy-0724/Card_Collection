@@ -153,10 +153,12 @@ function renderCards() {
       cancelBtn.textContent = "取消";
       cancelBtn.onclick = () => renderCards();
 
-      info.appendChild(titleInput);
-      info.appendChild(dateInput);
-      info.appendChild(priceInput);
-      info.appendChild(noteInput);
+      // 加上欄位標籤
+      info.appendChild(createLabeledField("標題", titleInput));
+      info.appendChild(createLabeledField("日期", dateInput));
+      info.appendChild(createLabeledField("價格", priceInput));
+      info.appendChild(createLabeledField("備註", noteInput));
+
       info.appendChild(saveBtn);
       info.appendChild(cancelBtn);
     };
@@ -177,6 +179,22 @@ function renderCards() {
     div.appendChild(info);
     cardList.appendChild(div);
   }
+}
+
+// ✅ 欄位加上標籤的輔助函式
+function createLabeledField(labelText, inputElement) {
+  const wrapper = document.createElement("div");
+  wrapper.style.marginBottom = "8px";
+
+  const label = document.createElement("label");
+  label.textContent = labelText;
+  label.style.display = "block";
+  label.style.marginBottom = "4px";
+  label.style.fontWeight = "bold";
+
+  wrapper.appendChild(label);
+  wrapper.appendChild(inputElement);
+  return wrapper;
 }
 
 // ✅ 刪除卡片
