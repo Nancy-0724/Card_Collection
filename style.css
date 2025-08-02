@@ -42,6 +42,7 @@ select {
   border: 1px solid #ccc;
   border-radius: 6px;
   box-sizing: border-box;
+  font-size: 0.95em;
 }
 
 /* 提交按鈕樣式 */
@@ -70,7 +71,7 @@ button[type="submit"]:hover {
 /* 每張小卡外框 */
 .card {
   display: flex;
-  align-items: center; /* ✅ 垂直置中圖片 */
+  align-items: center;
   background: #fafafa;
   border: 1px solid #ccc;
   border-radius: 8px;
@@ -98,18 +99,40 @@ button[type="submit"]:hover {
   flex: 1;
 }
 
-/* 卡片內的按鈕 */
+/* 卡片內的文字欄位標籤 */
+.card-info label {
+  font-weight: bold;
+  font-size: 0.9em;
+  margin-bottom: 4px;
+  display: block;
+  color: #444;
+}
+
+/* 編輯模式下輸入欄位樣式 */
+.card-info input,
+.card-info textarea {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 6px 8px;
+  font-size: 0.9em;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-sizing: border-box;
+}
+
+/* 編輯按鈕區 */
 .card-info button {
   margin-top: 6px;
   margin-right: 8px;
-  padding: 6px 10px;
+  padding: 6px 12px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.85em;
+  transition: background-color 0.2s;
 }
 
-/* 收藏按鈕樣式 */
+/* 收藏按鈕 */
 .card-info button:nth-of-type(1) {
   background-color: #ffe066;
 }
@@ -117,7 +140,7 @@ button[type="submit"]:hover {
   background-color: #ffd43b;
 }
 
-/* 編輯按鈕樣式 */
+/* 編輯按鈕 */
 .card-info button:nth-of-type(2) {
   background-color: #74c0fc;
   color: white;
@@ -126,7 +149,7 @@ button[type="submit"]:hover {
   background-color: #4dabf7;
 }
 
-/* 刪除按鈕樣式 */
+/* 刪除按鈕 */
 .card-info button:nth-of-type(3) {
   background-color: #ff6b6b;
   color: white;
@@ -135,27 +158,22 @@ button[type="submit"]:hover {
   background-color: #fa5252;
 }
 
-/* 儲存與取消按鈕（出現在編輯模式） */
-.card-info button:nth-of-type(1):has(+ input),
-.card-info button:nth-of-type(1):has(+ textarea) {
-  background-color: #40c057;
+/* 儲存按鈕（編輯模式） */
+.card-info button:contains("儲存") {
+  background-color: #fab005;
   color: white;
 }
-.card-info button:nth-of-type(2):has(+ input),
-.card-info button:nth-of-type(2):has(+ textarea) {
-  background-color: #adb5bd;
+.card-info button:contains("儲存"):hover {
+  background-color: #f59f00;
 }
 
-/* 編輯模式下輸入欄位樣式 */
-.card-info input,
-.card-info textarea {
-  width: 100%;
-  margin-bottom: 6px;
-  padding: 6px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  box-sizing: border-box;
-  font-size: 0.9em;
+/* 取消按鈕（編輯模式） */
+.card-info button:contains("取消") {
+  background-color: #74c0fc;
+  color: white;
+}
+.card-info button:contains("取消"):hover {
+  background-color: #4dabf7;
 }
 
 /* 排序下拉選單 */
