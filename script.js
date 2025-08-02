@@ -26,17 +26,13 @@ async function uploadToDrive(file) {
         );
 
         const data = await res.json();
-        console.log("📦 回傳資料：", data);
-
         if (data.success) {
-          console.log("🖼️ 圖片網址：", data.url);
           resolve(data.url);
         } else {
           alert("圖片上傳失敗：" + data.message);
           resolve(null);
         }
       } catch (err) {
-        console.error("❌ 圖片上傳錯誤：", err);
         alert("連線錯誤：" + err.message);
         resolve(null);
       }
@@ -108,11 +104,13 @@ function renderCards() {
 
     const info = document.createElement("div");
     info.className = "card-info";
-    info.innerHTML = `
-      <strong>${card.title}</strong> ${card.isFavorite ? "⭐" : ""}<br/>
-      <small>${card.date} | ${card.price} 元</small>
-      <p>${card.note}</p>
-    `;
+
+    const title = document.createElement("strong");
+    title.textContent = card.title + (card.isFavorite ? " ⭐" : "");
+    const meta = document.createElement("small");
+    meta.textContent = `${card.date} | ${card.price} 元`;
+    const note = document.createElement("p");
+    note.textContent = card.note;
 
     const favBtn = document.createElement("button");
     favBtn.textContent = card.isFavorite ? "取消收藏" : "加入收藏";
@@ -121,27 +119,56 @@ function renderCards() {
     const editBtn = document.createElement("button");
     editBtn.textContent = "編輯";
     editBtn.onclick = () => {
-      const newTitle = prompt("修改標題", card.title);
-      const newNote = prompt("修改備註", card.note);
-      const newDate = prompt("修改日期 (YYYY-MM-DD)", card.date);
-      const newPrice = prompt("修改價格", card.price);
+      info.innerHTML = "";
 
-      if (newTitle && newDate && !isNaN(Number(newPrice))) {
-        card.title = newTitle;
-        card.note = newNote;
-        card.date = newDate;
-        card.price = Number(newPrice);
-        saveCards(cards);
+      const titleInput = document.createElement("input");
+      titleInput.type = "text";
+      titleInput.value = card.title;
+
+      const dateInput = document.createElement("input");
+      dateInput.type = "date";
+      dateInput.value = card.date;
+
+      const priceInput = document.createElement("input");
+      priceInput.type = "number";
+      priceInput.min = "0";
+      priceInput.value = card.price;
+
+      const noteInput = document.createElement("textarea");
+      noteInput.rows = 2;
+      noteInput.value = card.note;
+
+      const saveBtn = document.createElement("button");
+      saveBtn.textContent = "儲存";
+      saveBtn.onclick = () => {
+        card.title = titleInput.value;
+        card.date = dateInput.value;
+        card.price = Number(priceInput.value);
+        card.note = noteInput.value;
+        saveCards(getCards().map(c => c.id === card.id ? card : c));
         renderCards();
-      } else {
-        alert("請輸入有效資料");
-      }
+      };
+
+      const cancelBtn = document.createElement("button");
+      cancelBtn.textContent = "取消";
+      cancelBtn.onclick = () => renderCards();
+
+      info.appendChild(titleInput);
+      info.appendChild(dateInput);
+      info.appendChild(priceInput);
+      info.appendChild(noteInput);
+      info.appendChild(saveBtn);
+      info.appendChild(cancelBtn);
     };
 
     const delBtn = document.createElement("button");
     delBtn.textContent = "刪除";
     delBtn.onclick = () => deleteCard(card.id);
 
+    info.appendChild(title);
+    info.appendChild(document.createElement("br"));
+    info.appendChild(meta);
+    info.appendChild(note);
     info.appendChild(favBtn);
     info.appendChild(editBtn);
     info.appendChild(delBtn);
