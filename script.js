@@ -3,19 +3,17 @@ const imageInput = document.getElementById("imageInput");
 const cardList = document.getElementById("cardList");
 const sortSelect = document.getElementById("sortSelect");
 
-// ✅ 替換成你的 Apps Script URL（不加 ?action）
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzcmPE_S3_yAfxalXXnfMuhZEX1S0ZI0sZMn5opQ9BB7e8iMn0BJKnUExKNYN2fU2-D/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxUsojxUScoSM1pXp7F0_MPATBQM8tcjHPmtq5xzywjEo3Lmn_PTGn0lj9B8QxzpVU36A/exec"; // 請替換
 
-// ✅ 上傳圖片到 Google Drive
 async function uploadToDrive(file) {
   return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onloadend = async () => {
       const base64Image = reader.result;
       const formData = new URLSearchParams();
+      formData.append("action", "upload");
       formData.append("image", base64Image);
       formData.append("filename", file.name);
-      formData.append("action", "upload");
 
       try {
         const res = await fetch(APPS_SCRIPT_URL, {
@@ -24,14 +22,9 @@ async function uploadToDrive(file) {
           body: formData.toString()
         });
         const data = await res.json();
-        if (data.success) {
-          resolve(data.url);
-        } else {
-          alert("圖片上傳失敗：" + data.message);
-          resolve(null);
-        }
+        resolve(data.success ? data.url : null);
       } catch (err) {
-        alert("連線錯誤：" + err.message);
+        alert("圖片上傳錯誤：" + err.message);
         resolve(null);
       }
     };
@@ -39,45 +32,8 @@ async function uploadToDrive(file) {
   });
 }
 
-// ✅ 儲存卡片資料到 Google Sheet
-async function saveCardToSheet(card) {
-  const formData = new URLSearchParams();
-  for (const key in card) {
-    formData.append(key, card[key]);
-  }
-  formData.append("action", "saveCard");
-
-  try {
-    const res = await fetch(APPS_SCRIPT_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: formData.toString()
-    });
-    const data = await res.json();
-    if (!data.success) {
-      alert("資料儲存失敗：" + data.message);
-    }
-  } catch (err) {
-    alert("連線失敗：" + err.message);
-  }
-}
-
-// ✅ 載入所有卡片（GET）
-async function fetchCardsFromSheet() {
-  try {
-    const res = await fetch(APPS_SCRIPT_URL);
-    const cards = await res.json();
-    return cards;
-  } catch (err) {
-    alert("讀取卡片資料失敗：" + err.message);
-    return [];
-  }
-}
-
-// ✅ 表單送出處理
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
-
   const file = imageInput.files[0];
   if (!file) return alert("請選擇圖片");
 
@@ -94,15 +50,44 @@ form.addEventListener("submit", async (e) => {
     isFavorite: false
   };
 
-  await saveCardToSheet(card);
+  await sendToServer("saveCard", card);
   await renderCards();
   form.reset();
 });
 
-// ✅ 顯示所有卡片
+async function sendToServer(action, data) {
+  const formData = new URLSearchParams();
+  formData.append("action", action);
+  for (const key in data) {
+    formData.append(key, data[key]);
+  }
+
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: formData.toString()
+    });
+    return await res.json();
+  } catch (err) {
+    alert("伺服器錯誤：" + err.message);
+    return { success: false };
+  }
+}
+
+async function fetchCards() {
+  try {
+    const res = await fetch(APPS_SCRIPT_URL);
+    return await res.json();
+  } catch (err) {
+    alert("讀取資料失敗：" + err.message);
+    return [];
+  }
+}
+
 async function renderCards() {
   cardList.innerHTML = "";
-  let cards = await fetchCardsFromSheet();
+  let cards = await fetchCards();
 
   const sort = sortSelect.value;
   if (sort === "price-asc") cards.sort((a, b) => a.price - b.price);
@@ -133,9 +118,57 @@ async function renderCards() {
     note.textContent = card.note;
 
     const favBtn = document.createElement("button");
-    favBtn.textContent = "加入收藏 (僅前端)";
-    favBtn.onclick = () => {
-      alert("此版本收藏功能為前端模擬，未寫入雲端。");
+    favBtn.textContent = card.isFavorite ? "取消收藏" : "加入收藏";
+    favBtn.onclick = async () => {
+      await sendToServer("toggleFavorite", {
+        id: card.id,
+        isFavorite: (!card.isFavorite).toString()
+      });
+      await renderCards();
+    };
+
+    const editBtn = document.createElement("button");
+    editBtn.textContent = "編輯";
+    editBtn.onclick = () => {
+      info.innerHTML = "";
+
+      const titleInput = createInput("text", card.title);
+      const dateInput = createInput("date", card.date);
+      const priceInput = createInput("number", card.price);
+      const noteInput = document.createElement("textarea");
+      noteInput.rows = 2;
+      noteInput.value = card.note;
+
+      const saveBtn = document.createElement("button");
+      saveBtn.textContent = "儲存";
+      saveBtn.onclick = async () => {
+        card.title = titleInput.value;
+        card.date = dateInput.value;
+        card.price = Number(priceInput.value);
+        card.note = noteInput.value;
+        await sendToServer("updateCard", card);
+        await renderCards();
+      };
+
+      const cancelBtn = document.createElement("button");
+      cancelBtn.textContent = "取消";
+      cancelBtn.onclick = renderCards;
+
+      info.appendChild(createLabeledField("標題", titleInput));
+      info.appendChild(createLabeledField("日期", dateInput));
+      info.appendChild(createLabeledField("價格", priceInput));
+      info.appendChild(createLabeledField("備註", noteInput));
+      info.appendChild(saveBtn);
+      info.appendChild(cancelBtn);
+    };
+
+    const delBtn = document.createElement("button");
+    delBtn.textContent = "刪除";
+    delBtn.onclick = async () => {
+      if (confirm("確定要刪除這張卡片嗎？")) {
+        await sendToServer("deleteCard", { id: card.id });
+        await renderCards();
+      }
     };
 
     info.appendChild(title);
@@ -143,14 +176,33 @@ async function renderCards() {
     info.appendChild(meta);
     info.appendChild(note);
     info.appendChild(favBtn);
+    info.appendChild(editBtn);
+    info.appendChild(delBtn);
+
     div.appendChild(img);
     div.appendChild(info);
     cardList.appendChild(div);
   }
 }
 
-// ✅ 排序選項變更時重新渲染
-sortSelect.addEventListener("change", renderCards);
+function createInput(type, value) {
+  const input = document.createElement("input");
+  input.type = type;
+  input.value = value;
+  return input;
+}
 
-// ✅ 初始載入
+function createLabeledField(labelText, inputElement) {
+  const wrapper = document.createElement("div");
+  wrapper.style.marginBottom = "8px";
+  const label = document.createElement("label");
+  label.textContent = labelText;
+  label.style.display = "block";
+  label.style.fontWeight = "bold";
+  wrapper.appendChild(label);
+  wrapper.appendChild(inputElement);
+  return wrapper;
+}
+
+sortSelect.addEventListener("change", renderCards);
 renderCards();
