@@ -71,7 +71,7 @@ button[type="submit"]:hover {
 /* 每張小卡外框 */
 .card {
   display: flex;
-  align-items: flex-start;
+  align-items: center; /* ✅ 圖片與內容垂直置中 */
   background: #fafafa;
   border: 1px solid #ccc;
   border-radius: 8px;
@@ -160,7 +160,7 @@ button[type="submit"]:hover {
   background-color: #fa5252;
 }
 
-/* 儲存按鈕（編輯模式用 append） */
+/* 儲存按鈕（編輯模式 append） */
 .card-info button:contains("儲存") {
   background-color: #fab005;
   color: white;
@@ -169,7 +169,7 @@ button[type="submit"]:hover {
   background-color: #f59f00;
 }
 
-/* 取消按鈕（編輯模式） */
+/* 取消按鈕（編輯模式 append） */
 .card-info button:contains("取消") {
   background-color: #adb5bd;
   color: white;
@@ -185,3 +185,5 @@ select#sortSelect {
   padding: 6px;
   border-radius: 6px;
 }
+
+/* 價格與時間分行：已由 script.js 分成兩個 <small>，此處無需特殊處理 */
