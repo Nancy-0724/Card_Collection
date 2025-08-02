@@ -1,30 +1,28 @@
-// 取得 HTML 中的各項 DOM 元素
 const form = document.getElementById("cardForm");
 const imageInput = document.getElementById("imageInput");
 const cardList = document.getElementById("cardList");
 const sortSelect = document.getElementById("sortSelect");
 
-// ✅ 上傳圖片到 Google Drive（透過 Apps Script）
+// ✅ 替換成你的 Apps Script URL（不加 ?action）
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzcmPE_S3_yAfxalXXnfMuhZEX1S0ZI0sZMn5opQ9BB7e8iMn0BJKnUExKNYN2fU2-D/exec";
+
+// ✅ 上傳圖片到 Google Drive
 async function uploadToDrive(file) {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     const reader = new FileReader();
     reader.onloadend = async () => {
       const base64Image = reader.result;
       const formData = new URLSearchParams();
       formData.append("image", base64Image);
       formData.append("filename", file.name);
+      formData.append("action", "upload");
 
       try {
-        const res = await fetch(
-          "https://script.google.com/macros/s/AKfycbx3Wb6bh_4JxkV0l1OkJ0fqvEOuT82IUq5-EUF35xB6se4YsmMv4LaY88v4wqBlDc4/exec",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/x-www-form-urlencoded" },
-            body: formData.toString(),
-            redirect: "follow"
-          }
-        );
-
+        const res = await fetch(APPS_SCRIPT_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: formData.toString()
+        });
         const data = await res.json();
         if (data.success) {
           resolve(data.url);
@@ -37,9 +35,43 @@ async function uploadToDrive(file) {
         resolve(null);
       }
     };
-
     reader.readAsDataURL(file);
   });
+}
+
+// ✅ 儲存卡片資料到 Google Sheet
+async function saveCardToSheet(card) {
+  const formData = new URLSearchParams();
+  for (const key in card) {
+    formData.append(key, card[key]);
+  }
+  formData.append("action", "saveCard");
+
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: formData.toString()
+    });
+    const data = await res.json();
+    if (!data.success) {
+      alert("資料儲存失敗：" + data.message);
+    }
+  } catch (err) {
+    alert("連線失敗：" + err.message);
+  }
+}
+
+// ✅ 載入所有卡片（GET）
+async function fetchCardsFromSheet() {
+  try {
+    const res = await fetch(APPS_SCRIPT_URL);
+    const cards = await res.json();
+    return cards;
+  } catch (err) {
+    alert("讀取卡片資料失敗：" + err.message);
+    return [];
+  }
 }
 
 // ✅ 表單送出處理
@@ -53,7 +85,7 @@ form.addEventListener("submit", async (e) => {
   if (!imageUrl) return;
 
   const card = {
-    id: Date.now(),
+    id: Date.now().toString(),
     title: document.getElementById("titleInput").value,
     note: document.getElementById("noteInput").value,
     date: document.getElementById("dateInput").value,
@@ -62,27 +94,15 @@ form.addEventListener("submit", async (e) => {
     isFavorite: false
   };
 
-  const cards = getCards();
-  cards.push(card);
-  saveCards(cards);
-  renderCards();
+  await saveCardToSheet(card);
+  await renderCards();
   form.reset();
 });
 
-// ✅ 取得所有卡片資料
-function getCards() {
-  return JSON.parse(localStorage.getItem("cards") || "[]");
-}
-
-// ✅ 儲存卡片資料
-function saveCards(cards) {
-  localStorage.setItem("cards", JSON.stringify(cards));
-}
-
 // ✅ 顯示所有卡片
-function renderCards() {
+async function renderCards() {
   cardList.innerHTML = "";
-  let cards = getCards();
+  let cards = await fetchCardsFromSheet();
 
   const sort = sortSelect.value;
   if (sort === "price-asc") cards.sort((a, b) => a.price - b.price);
@@ -113,108 +133,24 @@ function renderCards() {
     note.textContent = card.note;
 
     const favBtn = document.createElement("button");
-    favBtn.textContent = card.isFavorite ? "取消收藏" : "加入收藏";
-    favBtn.onclick = () => toggleFavorite(card.id);
-
-    const editBtn = document.createElement("button");
-    editBtn.textContent = "編輯";
-    editBtn.onclick = () => {
-      info.innerHTML = "";
-
-      const titleInput = document.createElement("input");
-      titleInput.type = "text";
-      titleInput.value = card.title;
-
-      const dateInput = document.createElement("input");
-      dateInput.type = "date";
-      dateInput.value = card.date;
-
-      const priceInput = document.createElement("input");
-      priceInput.type = "number";
-      priceInput.min = "0";
-      priceInput.value = card.price;
-
-      const noteInput = document.createElement("textarea");
-      noteInput.rows = 2;
-      noteInput.value = card.note;
-
-      const saveBtn = document.createElement("button");
-      saveBtn.textContent = "儲存";
-      saveBtn.onclick = () => {
-        card.title = titleInput.value;
-        card.date = dateInput.value;
-        card.price = Number(priceInput.value);
-        card.note = noteInput.value;
-        saveCards(getCards().map(c => c.id === card.id ? card : c));
-        renderCards();
-      };
-
-      const cancelBtn = document.createElement("button");
-      cancelBtn.textContent = "取消";
-      cancelBtn.onclick = () => renderCards();
-
-      // 加上欄位標籤
-      info.appendChild(createLabeledField("標題", titleInput));
-      info.appendChild(createLabeledField("日期", dateInput));
-      info.appendChild(createLabeledField("價格", priceInput));
-      info.appendChild(createLabeledField("備註", noteInput));
-
-      info.appendChild(saveBtn);
-      info.appendChild(cancelBtn);
+    favBtn.textContent = "加入收藏 (僅前端)";
+    favBtn.onclick = () => {
+      alert("此版本收藏功能為前端模擬，未寫入雲端。");
     };
-
-    const delBtn = document.createElement("button");
-    delBtn.textContent = "刪除";
-    delBtn.onclick = () => deleteCard(card.id);
 
     info.appendChild(title);
     info.appendChild(document.createElement("br"));
     info.appendChild(meta);
     info.appendChild(note);
     info.appendChild(favBtn);
-    info.appendChild(editBtn);
-    info.appendChild(delBtn);
-
     div.appendChild(img);
     div.appendChild(info);
     cardList.appendChild(div);
   }
 }
 
-// ✅ 欄位加上標籤的輔助函式
-function createLabeledField(labelText, inputElement) {
-  const wrapper = document.createElement("div");
-  wrapper.style.marginBottom = "8px";
-
-  const label = document.createElement("label");
-  label.textContent = labelText;
-  label.style.display = "block";
-  label.style.marginBottom = "4px";
-  label.style.fontWeight = "bold";
-
-  wrapper.appendChild(label);
-  wrapper.appendChild(inputElement);
-  return wrapper;
-}
-
-// ✅ 刪除卡片
-function deleteCard(id) {
-  const cards = getCards().filter((card) => card.id !== id);
-  saveCards(cards);
-  renderCards();
-}
-
-// ✅ 收藏/取消收藏切換
-function toggleFavorite(id) {
-  const cards = getCards();
-  const card = cards.find((c) => c.id === id);
-  if (card) card.isFavorite = !card.isFavorite;
-  saveCards(cards);
-  renderCards();
-}
-
 // ✅ 排序選項變更時重新渲染
 sortSelect.addEventListener("change", renderCards);
 
-// ✅ 初始載入畫面
+// ✅ 初始載入
 renderCards();
