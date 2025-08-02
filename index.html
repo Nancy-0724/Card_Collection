@@ -19,7 +19,7 @@
         <input type="text" id="titleInput" required />
       </label>
       <label>備註：
-        <textarea id="noteInput" rows="2" placeholder="這張小卡的故事、角色、用途等"></textarea>
+        <textarea id="noteInput" rows="2" placeholder=" "></textarea>
       </label>
       <label>獲得日期：
         <input type="date" id="dateInput" required />
@@ -27,10 +27,25 @@
       <label>收購價格（元）：
         <input type="number" id="priceInput" min="0" required />
       </label>
+      <label>分類：
+        <input type="text" id="categoryInput" placeholder=" " />
+      </label>
       <button type="submit">加入收藏</button>
     </form>
 
+    <!-- 上傳中提示 -->
+    <div id="loadingMsg" style="display:none; text-align:center; margin-top:10px; color:#1e90ff; font-weight:bold;">
+      上傳中...
+    </div>
+
     <hr />
+
+    <!-- 篩選分類 -->
+    <label>篩選分類：
+      <select id="filterCategory">
+        <option value="">全部分類</option>
+      </select>
+    </label>
 
     <!-- 排序選單 -->
     <label>排序方式：
