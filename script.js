@@ -102,14 +102,26 @@ function formatDateToLocalYMD(dateStr) {
   return `${y}-${m}-${d}`;
 }
 
+function getColorForCategory(category) {
+  const colors = [
+    "#f44336", "#e91e63", "#9c27b0", "#3f51b5", "#2196f3",
+    "#009688", "#4caf50", "#ff9800", "#795548", "#607d8b"
+  ];
+  let hash = 0;
+  for (let i = 0; i < category.length; i++) {
+    hash = category.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const index = Math.abs(hash) % colors.length;
+  return colors[index];
+}
+
 async function renderCards() {
   cardList.innerHTML = "";
   let cards = await fetchCards();
 
-  // ➕ 記住目前篩選分類
   const currentCategory = filterCategory.value;
 
-  // ➕ 統計分類出現次數
+  // 分類計數
   const categoryCount = {};
   for (const c of cards) {
     const key = c.category || "未分類";
@@ -124,12 +136,10 @@ async function renderCards() {
 
   filterCategory.value = currentCategory;
 
-  // ➕ 篩選分類
   if (currentCategory) {
     cards = cards.filter(c => (c.category || "未分類") === currentCategory);
   }
 
-  // 排序邏輯
   const sort = sortSelect.value;
   if (sort === "price-asc") cards.sort((a, b) => a.price - b.price);
   if (sort === "price-desc") cards.sort((a, b) => b.price - a.price);
@@ -163,7 +173,8 @@ async function renderCards() {
     const categoryName = card.category || "未分類";
     const metaCategory = document.createElement("small");
     metaCategory.textContent = categoryName;
-    metaCategory.className = `category-label tag-${categoryName.replace(/\s+/g, "")}`;
+    metaCategory.className = "category-label";
+    metaCategory.style.backgroundColor = getColorForCategory(categoryName);
 
     const note = document.createElement("p");
     note.textContent = card.note;
