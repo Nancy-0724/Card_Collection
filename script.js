@@ -2,8 +2,10 @@ const form = document.getElementById("cardForm");
 const imageInput = document.getElementById("imageInput");
 const cardList = document.getElementById("cardList");
 const sortSelect = document.getElementById("sortSelect");
+const filterCategory = document.getElementById("filterCategory");
+const loadingMsg = document.getElementById("loadingMsg");
 
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxUsojxUScoSM1pXp7F0_MPATBQM8tcjHPmtq5xzywjEo3Lmn_PTGn0lj9B8QxzpVU36A/exec"; // ← 替換為你的 Apps Script 網址
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxuVzAwJflOs0GIJEm5_Gn3vg8m1PbjYB3NIeS00tixZ_xWGg4rA8pHneWUOe79HOA7OA/exec"; // ← 替換為你的 Apps Script 網址
 
 async function uploadToDrive(file) {
   return new Promise((resolve) => {
@@ -37,8 +39,13 @@ form.addEventListener("submit", async (e) => {
   const file = imageInput.files[0];
   if (!file) return alert("請選擇圖片");
 
+  loadingMsg.style.display = "block";
+
   const imageUrl = await uploadToDrive(file);
-  if (!imageUrl) return;
+  if (!imageUrl) {
+    loadingMsg.style.display = "none";
+    return;
+  }
 
   const card = {
     id: Date.now().toString(),
@@ -46,6 +53,7 @@ form.addEventListener("submit", async (e) => {
     note: document.getElementById("noteInput").value,
     date: document.getElementById("dateInput").value,
     price: Number(document.getElementById("priceInput").value),
+    category: document.getElementById("categoryInput").value || "未分類",
     imageUrl,
     isFavorite: false
   };
@@ -53,6 +61,7 @@ form.addEventListener("submit", async (e) => {
   await sendToServer("saveCard", card);
   await renderCards();
   form.reset();
+  loadingMsg.style.display = "none";
 });
 
 async function sendToServer(action, data) {
@@ -85,7 +94,6 @@ async function fetchCards() {
   }
 }
 
-// ✅ 本地時區轉安全日期字串（YYYY-MM-DD）
 function formatDateToLocalYMD(dateStr) {
   const date = new Date(dateStr);
   const y = date.getFullYear();
@@ -97,6 +105,16 @@ function formatDateToLocalYMD(dateStr) {
 async function renderCards() {
   cardList.innerHTML = "";
   let cards = await fetchCards();
+
+  // 分類選單初始化
+  const uniqueCategories = [...new Set(cards.map(c => c.category || "未分類"))];
+  filterCategory.innerHTML = `<option value="">全部分類</option>` +
+    uniqueCategories.map(c => `<option value="${c}">${c}</option>`).join("");
+
+  const selectedCategory = filterCategory.value;
+  if (selectedCategory) {
+    cards = cards.filter(c => c.category === selectedCategory);
+  }
 
   const sort = sortSelect.value;
   if (sort === "price-asc") cards.sort((a, b) => a.price - b.price);
@@ -126,6 +144,8 @@ async function renderCards() {
     metaDate.textContent = `日期：${formatDateToLocalYMD(card.date)}`;
     const metaPrice = document.createElement("small");
     metaPrice.textContent = `價格：${card.price} 元`;
+    const metaCategory = document.createElement("small");
+    metaCategory.textContent = `分類：${card.category || "未分類"}`;
 
     const note = document.createElement("p");
     note.textContent = card.note;
@@ -148,6 +168,7 @@ async function renderCards() {
       const titleInput = createInput("text", card.title);
       const dateInput = createInput("date", formatDateToLocalYMD(card.date));
       const priceInput = createInput("number", card.price);
+      const categoryInput = createInput("text", card.category);
       const noteInput = document.createElement("textarea");
       noteInput.rows = 2;
       noteInput.value = card.note;
@@ -158,6 +179,7 @@ async function renderCards() {
         card.title = titleInput.value;
         card.date = dateInput.value;
         card.price = Number(priceInput.value);
+        card.category = categoryInput.value || "未分類";
         card.note = noteInput.value;
         await sendToServer("updateCard", card);
         await renderCards();
@@ -170,6 +192,7 @@ async function renderCards() {
       info.appendChild(createLabeledField("標題", titleInput));
       info.appendChild(createLabeledField("日期", dateInput));
       info.appendChild(createLabeledField("價格", priceInput));
+      info.appendChild(createLabeledField("分類", categoryInput));
       info.appendChild(createLabeledField("備註", noteInput));
       info.appendChild(saveBtn);
       info.appendChild(cancelBtn);
@@ -189,6 +212,8 @@ async function renderCards() {
     info.appendChild(metaDate);
     info.appendChild(document.createElement("br"));
     info.appendChild(metaPrice);
+    info.appendChild(document.createElement("br"));
+    info.appendChild(metaCategory);
     info.appendChild(note);
     info.appendChild(favBtn);
     info.appendChild(editBtn);
@@ -220,4 +245,5 @@ function createLabeledField(labelText, inputElement) {
 }
 
 sortSelect.addEventListener("change", renderCards);
+filterCategory.addEventListener("change", renderCards);
 renderCards();
