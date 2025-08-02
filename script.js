@@ -106,16 +106,30 @@ async function renderCards() {
   cardList.innerHTML = "";
   let cards = await fetchCards();
 
-  // 分類選單初始化
-  const uniqueCategories = [...new Set(cards.map(c => c.category || "未分類"))];
-  filterCategory.innerHTML = `<option value="">全部分類</option>` +
-    uniqueCategories.map(c => `<option value="${c}">${c}</option>`).join("");
+  // ➕ 記住目前篩選分類
+  const currentCategory = filterCategory.value;
 
-  const selectedCategory = filterCategory.value;
-  if (selectedCategory) {
-    cards = cards.filter(c => c.category === selectedCategory);
+  // ➕ 統計分類出現次數
+  const categoryCount = {};
+  for (const c of cards) {
+    const key = c.category || "未分類";
+    categoryCount[key] = (categoryCount[key] || 0) + 1;
   }
 
+  const uniqueCategories = Object.keys(categoryCount);
+  filterCategory.innerHTML = `<option value="">全部分類</option>` +
+    uniqueCategories.map(cat =>
+      `<option value="${cat}">${cat} (${categoryCount[cat]})</option>`
+    ).join("");
+
+  filterCategory.value = currentCategory;
+
+  // ➕ 篩選分類
+  if (currentCategory) {
+    cards = cards.filter(c => (c.category || "未分類") === currentCategory);
+  }
+
+  // 排序邏輯
   const sort = sortSelect.value;
   if (sort === "price-asc") cards.sort((a, b) => a.price - b.price);
   if (sort === "price-desc") cards.sort((a, b) => b.price - a.price);
@@ -142,10 +156,14 @@ async function renderCards() {
 
     const metaDate = document.createElement("small");
     metaDate.textContent = `日期：${formatDateToLocalYMD(card.date)}`;
+
     const metaPrice = document.createElement("small");
     metaPrice.textContent = `價格：${card.price} 元`;
+
+    const categoryName = card.category || "未分類";
     const metaCategory = document.createElement("small");
-    metaCategory.textContent = `分類：${card.category || "未分類"}`;
+    metaCategory.textContent = categoryName;
+    metaCategory.className = `category-label tag-${categoryName.replace(/\s+/g, "")}`;
 
     const note = document.createElement("p");
     note.textContent = card.note;
