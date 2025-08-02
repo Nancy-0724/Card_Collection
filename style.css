@@ -71,7 +71,7 @@ button[type="submit"]:hover {
 /* 每張小卡外框 */
 .card {
   display: flex;
-  align-items: center; /* ✅ 圖片與內容垂直置中 */
+  align-items: center;
   background: #fafafa;
   border: 1px solid #ccc;
   border-radius: 8px;
@@ -186,4 +186,13 @@ select#sortSelect {
   border-radius: 6px;
 }
 
-/* 價格與時間分行：已由 script.js 分成兩個 <small>，此處無需特殊處理 */
+/* 分類色彩標籤 */
+.category-label {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  color: white;
+  margin-top: 5px;
+  margin-bottom: 6px;
+}
