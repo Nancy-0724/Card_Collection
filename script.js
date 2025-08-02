@@ -3,7 +3,7 @@ const imageInput = document.getElementById("imageInput");
 const cardList = document.getElementById("cardList");
 const sortSelect = document.getElementById("sortSelect");
 
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxUsojxUScoSM1pXp7F0_MPATBQM8tcjHPmtq5xzywjEo3Lmn_PTGn0lj9B8QxzpVU36A/exec"; // ← 請替換
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxUsojxUScoSM1pXp7F0_MPATBQM8tcjHPmtq5xzywjEo3Lmn_PTGn0lj9B8QxzpVU36A/exec"; // ← 替換為你的 Apps Script 網址
 
 async function uploadToDrive(file) {
   return new Promise((resolve) => {
@@ -85,6 +85,15 @@ async function fetchCards() {
   }
 }
 
+// ✅ 本地時區轉安全日期字串（YYYY-MM-DD）
+function formatDateToLocalYMD(dateStr) {
+  const date = new Date(dateStr);
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
 async function renderCards() {
   cardList.innerHTML = "";
   let cards = await fetchCards();
@@ -113,9 +122,8 @@ async function renderCards() {
     const title = document.createElement("strong");
     title.textContent = card.title + (card.isFavorite ? " ⭐" : "");
 
-    const formattedDate = card.date.split("T")[0];
     const metaDate = document.createElement("small");
-    metaDate.textContent = `日期：${formattedDate}`;
+    metaDate.textContent = `日期：${formatDateToLocalYMD(card.date)}`;
     const metaPrice = document.createElement("small");
     metaPrice.textContent = `價格：${card.price} 元`;
 
@@ -138,7 +146,7 @@ async function renderCards() {
       info.innerHTML = "";
 
       const titleInput = createInput("text", card.title);
-      const dateInput = createInput("date", card.date);
+      const dateInput = createInput("date", formatDateToLocalYMD(card.date));
       const priceInput = createInput("number", card.price);
       const noteInput = document.createElement("textarea");
       noteInput.rows = 2;
