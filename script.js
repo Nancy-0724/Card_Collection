@@ -3,7 +3,7 @@ const imageInput = document.getElementById("imageInput");
 const cardList = document.getElementById("cardList");
 const sortSelect = document.getElementById("sortSelect");
 
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/你的網址/exec"; // ← 替換成你自己的網址
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxUsojxUScoSM1pXp7F0_MPATBQM8tcjHPmtq5xzywjEo3Lmn_PTGn0lj9B8QxzpVU36A/exec"; // ← 替換成你自己的網址
 
 async function uploadToDrive(file) {
   return new Promise((resolve) => {
