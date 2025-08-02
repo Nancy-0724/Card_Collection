@@ -88,7 +88,7 @@ button[type="submit"]:hover {
   width: 100px;
   height: 100px;
   object-fit: cover;
-  object-position: center; /* ✅ 圖片置中顯示 */
+  object-position: center;
   flex-shrink: 0;
 }
 
@@ -110,29 +110,52 @@ button[type="submit"]:hover {
 }
 
 /* 收藏按鈕樣式 */
-.card-info button:nth-child(4) {
+.card-info button:nth-of-type(1) {
   background-color: #ffe066;
 }
-.card-info button:nth-child(4):hover {
+.card-info button:nth-of-type(1):hover {
   background-color: #ffd43b;
 }
 
-/* 編輯按鈕樣式（預設位置第5個） */
-.card-info button:nth-child(5) {
+/* 編輯按鈕樣式 */
+.card-info button:nth-of-type(2) {
   background-color: #74c0fc;
   color: white;
 }
-.card-info button:nth-child(5):hover {
+.card-info button:nth-of-type(2):hover {
   background-color: #4dabf7;
 }
 
-/* 刪除按鈕樣式（預設位置第6個） */
-.card-info button:nth-child(6) {
+/* 刪除按鈕樣式 */
+.card-info button:nth-of-type(3) {
   background-color: #ff6b6b;
   color: white;
 }
-.card-info button:nth-child(6):hover {
+.card-info button:nth-of-type(3):hover {
   background-color: #fa5252;
+}
+
+/* 儲存與取消按鈕（出現在編輯模式） */
+.card-info button:nth-of-type(1):has(+ input),
+.card-info button:nth-of-type(1):has(+ textarea) {
+  background-color: #40c057;
+  color: white;
+}
+.card-info button:nth-of-type(2):has(+ input),
+.card-info button:nth-of-type(2):has(+ textarea) {
+  background-color: #adb5bd;
+}
+
+/* 編輯模式下輸入欄位樣式 */
+.card-info input,
+.card-info textarea {
+  width: 100%;
+  margin-bottom: 6px;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-size: 0.9em;
 }
 
 /* 排序下拉選單 */
