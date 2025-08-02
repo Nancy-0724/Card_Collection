@@ -98,7 +98,6 @@ function renderCards() {
     const div = document.createElement("div");
     div.className = "card";
 
-    // ✅ 圖片元件建構（加上 referrerPolicy + 備用圖片）
     const img = document.createElement("img");
     img.src = card.imageUrl;
     img.alt = "小卡圖片";
@@ -119,11 +118,32 @@ function renderCards() {
     favBtn.textContent = card.isFavorite ? "取消收藏" : "加入收藏";
     favBtn.onclick = () => toggleFavorite(card.id);
 
+    const editBtn = document.createElement("button");
+    editBtn.textContent = "編輯";
+    editBtn.onclick = () => {
+      const newTitle = prompt("修改標題", card.title);
+      const newNote = prompt("修改備註", card.note);
+      const newDate = prompt("修改日期 (YYYY-MM-DD)", card.date);
+      const newPrice = prompt("修改價格", card.price);
+
+      if (newTitle && newDate && !isNaN(Number(newPrice))) {
+        card.title = newTitle;
+        card.note = newNote;
+        card.date = newDate;
+        card.price = Number(newPrice);
+        saveCards(cards);
+        renderCards();
+      } else {
+        alert("請輸入有效資料");
+      }
+    };
+
     const delBtn = document.createElement("button");
     delBtn.textContent = "刪除";
     delBtn.onclick = () => deleteCard(card.id);
 
     info.appendChild(favBtn);
+    info.appendChild(editBtn);
     info.appendChild(delBtn);
 
     div.appendChild(img);
