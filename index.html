@@ -28,7 +28,8 @@
         <input type="number" id="priceInput" min="0" required />
       </label>
       <label>分類：
-        <input type="text" id="categoryInput" placeholder=" " />
+        <input type="text" id="categoryInput" list="categoryOptions" placeholder=" " />
+        <datalist id="categoryOptions"></datalist>
       </label>
       <button type="submit">加入收藏</button>
     </form>
@@ -44,6 +45,7 @@
     <label>篩選分類：
       <select id="filterCategory">
         <option value="">全部分類</option>
+        <option value="__favorite__">⭐ 已收藏</option>
       </select>
     </label>
 
@@ -59,9 +61,12 @@
 
     <h2>我的小卡收藏</h2>
     <div id="cardList" class="card-list"></div>
+
+    <!-- 總金額 -->
+    <h3 id="totalAmount" style="text-align:right; margin-top:10px;"></h3>
   </div>
 
-  <!-- 引入 JavaScript（只要一次！） -->
+  <!-- 引入 JavaScript -->
   <script src="./script.js" defer></script>
 </body>
 </html>
