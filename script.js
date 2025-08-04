@@ -5,7 +5,7 @@ const sortSelect = document.getElementById("sortSelect");
 const filterCategory = document.getElementById("filterCategory");
 const loadingMsg = document.getElementById("loadingMsg");
 
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxuVzAwJflOs0GIJEm5_Gn3vg8m1PbjYB3NIeS00tixZ_xWGg4rA8pHneWUOe79HOA7OA/exec";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxuVzAwJflOs0GIJEm5_Gn3vg8m1PbjYB3NIeS00tixZ_xWGg4rA8pHneWUOe79HOA7OA/exec"; // ← 替換為你的 Apps Script 網址
 
 async function uploadToDrive(file) {
   return new Promise((resolve) => {
@@ -121,48 +121,32 @@ async function renderCards() {
 
   const currentCategory = filterCategory.value;
 
-  // 分類統計與更新選單
+  // 分類計數
   const categoryCount = {};
-  const seenCategories = new Set();
   for (const c of cards) {
     const key = c.category || "未分類";
     categoryCount[key] = (categoryCount[key] || 0) + 1;
-    seenCategories.add(key);
   }
 
-  const uniqueCategories = Array.from(seenCategories);
-  filterCategory.innerHTML = `<option value="">全部分類</option>
-    <option value="__favorite__">⭐ 已收藏</option>` +
+  const uniqueCategories = Object.keys(categoryCount);
+  filterCategory.innerHTML = `<option value="">全部分類</option>` +
     uniqueCategories.map(cat =>
-      <option value="${cat}">${cat} (${categoryCount[cat]})</option>
+      `<option value="${cat}">${cat} (${categoryCount[cat]})</option>`
     ).join("");
+
   filterCategory.value = currentCategory;
 
-  // 更新 datalist 內容
-  const categoryOptions = document.getElementById("categoryOptions");
-  categoryOptions.innerHTML = uniqueCategories.map(cat =>
-    <option value="${cat}"></option>
-  ).join("");
-
-  // 篩選
-  if (currentCategory === "__favorite__") {
-    cards = cards.filter(c => c.isFavorite);
-  } else if (currentCategory) {
+  if (currentCategory) {
     cards = cards.filter(c => (c.category || "未分類") === currentCategory);
   }
 
-  // 排序
   const sort = sortSelect.value;
   if (sort === "price-asc") cards.sort((a, b) => a.price - b.price);
   if (sort === "price-desc") cards.sort((a, b) => b.price - a.price);
   if (sort === "date-asc") cards.sort((a, b) => new Date(a.date) - new Date(b.date));
   if (sort === "date-desc") cards.sort((a, b) => new Date(b.date) - new Date(a.date));
 
-  let total = 0;
-
   for (const card of cards) {
-    total += card.price;
-
     const div = document.createElement("div");
     div.className = "card";
 
@@ -268,9 +252,6 @@ async function renderCards() {
     div.appendChild(info);
     cardList.appendChild(div);
   }
-
-  document.getElementById("totalAmount").textContent =
-    `總金額：${total} 元（共 ${cards.length} 張卡片）`;
 }
 
 function createInput(type, value) {
