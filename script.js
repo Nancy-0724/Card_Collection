@@ -1,119 +1,4 @@
-const form = document.getElementById("cardForm");
-const imageInput = document.getElementById("imageInput");
-const cardList = document.getElementById("cardList");
-const sortSelect = document.getElementById("sortSelect");
-const filterCategory = document.getElementById("filterCategory");
-const loadingMsg = document.getElementById("loadingMsg");
-
-const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxuVzAwJflOs0GIJEm5_Gn3vg8m1PbjYB3NIeS00tixZ_xWGg4rA8pHneWUOe79HOA7OA/exec"; // ← 替換為你的 Apps Script 網址
-
-async function uploadToDrive(file) {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      const base64Image = reader.result;
-      const formData = new URLSearchParams();
-      formData.append("action", "upload");
-      formData.append("image", base64Image);
-      formData.append("filename", file.name);
-
-      try {
-        const res = await fetch(APPS_SCRIPT_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: formData.toString()
-        });
-        const data = await res.json();
-        resolve(data.success ? data.url : null);
-      } catch (err) {
-        alert("圖片上傳錯誤：" + err.message);
-        resolve(null);
-      }
-    };
-    reader.readAsDataURL(file);
-  });
-}
-
-form.addEventListener("submit", async (e) => {
-  e.preventDefault();
-  const file = imageInput.files[0];
-  if (!file) return alert("請選擇圖片");
-
-  loadingMsg.style.display = "block";
-
-  const imageUrl = await uploadToDrive(file);
-  if (!imageUrl) {
-    loadingMsg.style.display = "none";
-    return;
-  }
-
-  const card = {
-    id: Date.now().toString(),
-    title: document.getElementById("titleInput").value,
-    note: document.getElementById("noteInput").value,
-    date: document.getElementById("dateInput").value,
-    price: Number(document.getElementById("priceInput").value),
-    category: document.getElementById("categoryInput").value || "未分類",
-    imageUrl,
-    isFavorite: false
-  };
-
-  await sendToServer("saveCard", card);
-  await renderCards();
-  form.reset();
-  loadingMsg.style.display = "none";
-});
-
-async function sendToServer(action, data) {
-  const formData = new URLSearchParams();
-  formData.append("action", action);
-  for (const key in data) {
-    formData.append(key, data[key]);
-  }
-
-  try {
-    const res = await fetch(APPS_SCRIPT_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: formData.toString()
-    });
-    return await res.json();
-  } catch (err) {
-    alert("伺服器錯誤：" + err.message);
-    return { success: false };
-  }
-}
-
-async function fetchCards() {
-  try {
-    const res = await fetch(APPS_SCRIPT_URL);
-    return await res.json();
-  } catch (err) {
-    alert("讀取資料失敗：" + err.message);
-    return [];
-  }
-}
-
-function formatDateToLocalYMD(dateStr) {
-  const date = new Date(dateStr);
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
-
-function getColorForCategory(category) {
-  const colors = [
-    "#f44336", "#e91e63", "#9c27b0", "#3f51b5", "#2196f3",
-    "#009688", "#4caf50", "#ff9800", "#795548", "#607d8b"
-  ];
-  let hash = 0;
-  for (let i = 0; i < category.length; i++) {
-    hash = category.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  const index = Math.abs(hash) % colors.length;
-  return colors[index];
-}
+// ...原本的程式碼皆維持...
 
 async function renderCards() {
   cardList.innerHTML = "";
@@ -121,32 +6,48 @@ async function renderCards() {
 
   const currentCategory = filterCategory.value;
 
-  // 分類計數
+  // 分類統計與更新選單
   const categoryCount = {};
+  const seenCategories = new Set();
   for (const c of cards) {
     const key = c.category || "未分類";
     categoryCount[key] = (categoryCount[key] || 0) + 1;
+    seenCategories.add(key);
   }
 
-  const uniqueCategories = Object.keys(categoryCount);
-  filterCategory.innerHTML = `<option value="">全部分類</option>` +
+  const uniqueCategories = Array.from(seenCategories);
+  filterCategory.innerHTML = `<option value="">全部分類</option>
+    <option value="__favorite__">⭐ 已收藏</option>` +
     uniqueCategories.map(cat =>
-      `<option value="${cat}">${cat} (${categoryCount[cat]})</option>`
+      <option value="${cat}">${cat} (${categoryCount[cat]})</option>
     ).join("");
-
   filterCategory.value = currentCategory;
 
-  if (currentCategory) {
+  // 更新 datalist 內容
+  const categoryOptions = document.getElementById("categoryOptions");
+  categoryOptions.innerHTML = uniqueCategories.map(cat =>
+    <option value="${cat}"></option>
+  ).join("");
+
+  // 篩選
+  if (currentCategory === "__favorite__") {
+    cards = cards.filter(c => c.isFavorite);
+  } else if (currentCategory) {
     cards = cards.filter(c => (c.category || "未分類") === currentCategory);
   }
 
+  // 排序
   const sort = sortSelect.value;
   if (sort === "price-asc") cards.sort((a, b) => a.price - b.price);
   if (sort === "price-desc") cards.sort((a, b) => b.price - a.price);
   if (sort === "date-asc") cards.sort((a, b) => new Date(a.date) - new Date(b.date));
   if (sort === "date-desc") cards.sort((a, b) => new Date(b.date) - new Date(a.date));
 
+  let total = 0;
+
   for (const card of cards) {
+    total += card.price;
+
     const div = document.createElement("div");
     div.className = "card";
 
@@ -252,27 +153,8 @@ async function renderCards() {
     div.appendChild(info);
     cardList.appendChild(div);
   }
-}
 
-function createInput(type, value) {
-  const input = document.createElement("input");
-  input.type = type;
-  input.value = value;
-  return input;
+  // ✅ 修改這一行
+  document.getElementById("totalAmount").textContent =
+    `總金額：${total} 元（共 ${cards.length} 張卡片）`;
 }
-
-function createLabeledField(labelText, inputElement) {
-  const wrapper = document.createElement("div");
-  wrapper.style.marginBottom = "8px";
-  const label = document.createElement("label");
-  label.textContent = labelText;
-  label.style.display = "block";
-  label.style.fontWeight = "bold";
-  wrapper.appendChild(label);
-  wrapper.appendChild(inputElement);
-  return wrapper;
-}
-
-sortSelect.addEventListener("change", renderCards);
-filterCategory.addEventListener("change", renderCards);
-renderCards();
